@@ -130,9 +130,11 @@ def _read_fd_endswith(fd, b_endswith: bytes, block_size: int) -> bytes:
 		else:  # pytest-cov:windows: no cover
 			# this does NOT work on windows... and it may not work on other systems... in that case, put more things to use the original code above
 			inputready, outputready, exceptready = select.select([fd], [], [])
-			for i in inputready:
-				if i == fd:
-					output_list.append(os.read(fd, block_size))
+			if fd in inputready:
+				data = os.read(fd, block_size)
+				if len(data) == 0:
+					raise Exception("unexpected EOF from exiftool")
+				output_list.append(data)
 
 	return b"".join(output_list)
 
